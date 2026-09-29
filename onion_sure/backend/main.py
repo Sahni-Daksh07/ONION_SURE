@@ -91,13 +91,19 @@ async def log_requests(request: Request, call_next):
 # Standardized Validation Error Handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    sanitized_errors = []
+    for err in exc.errors():
+        err_copy = dict(err)
+        if "input" in err_copy and isinstance(err_copy["input"], (bytes, bytearray)):
+            err_copy["input"] = f"<binary data: {len(err_copy['input'])} bytes>"
+        sanitized_errors.append(err_copy)
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "success": False,
             "error_code": "VALIDATION_ERROR",
             "message": "Invalid request parameters or payload",
-            "details": exc.errors(),
+            "details": sanitized_errors,
         },
     )
 
