@@ -39,6 +39,7 @@ from ...schemas.api_schemas import (
 )
 from ...services.inspection_service import InspectionService
 from ...services.grading_persistence_service import GradingPersistenceService
+from ...services.report_service import ReportService
 from ...services.storage_service import image_storage_service
 from ...config import settings
 
@@ -292,9 +293,9 @@ def finalize_inspection_and_generate_report(
     actor_id: str = "system",
     db: Session = Depends(get_db),
 ):
-    """Finalizes an inspection and generates the immutable digital quality report with QR hash."""
+    """Finalizes an inspection and generates the immutable digital quality report with PDF and QR hash."""
     try:
-        return InspectionService.finalize_inspection(
+        return ReportService.finalize_and_generate_report(
             db=db,
             inspection_id=inspection_id,
             actor_id=actor_id,

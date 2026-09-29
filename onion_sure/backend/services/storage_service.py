@@ -25,6 +25,11 @@ class BaseStorageProvider(ABC):
         """Returns: (storage_key, bucket, size_bytes, sha256_hash)"""
         pass
 
+    @abstractmethod
+    def retrieve_file(self, storage_key: str) -> bytes:
+        """Returns file content bytes."""
+        pass
+
 
 class LocalStorageProvider(BaseStorageProvider):
     def __init__(self, base_dir: Path = settings.STORAGE_LOCAL_DIR, bucket: str = settings.STORAGE_BUCKET):
@@ -46,6 +51,15 @@ class LocalStorageProvider(BaseStorageProvider):
 
         return storage_key, self.bucket, file_size, sha256_hash
 
+    def retrieve_file(self, storage_key: str) -> bytes:
+        path = Path(storage_key)
+        if not path.exists():
+            path = self.base_dir / Path(storage_key).name
+        if not path.exists():
+            raise FileNotFoundError(f"File not found at storage key: {storage_key}")
+        with open(path, "rb") as f:
+            return f.read()
+
 
 class ImageStorageService:
     def __init__(self, provider: BaseStorageProvider = None):
@@ -61,6 +75,12 @@ class ImageStorageService:
             "content_type": content_type,
             "filename": filename,
         }
+
+    def save_file(self, content: bytes, filename: str, content_type: str = "application/octet-stream") -> Dict[str, Any]:
+        return self.save_image(content, filename, content_type)
+
+    def get_file(self, storage_key: str) -> bytes:
+        return self.provider.retrieve_file(storage_key)
 
 
 image_storage_service = ImageStorageService()

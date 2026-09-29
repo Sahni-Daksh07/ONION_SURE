@@ -430,6 +430,16 @@ class ReportVerifyResponse(BaseModel):
     generated_at: datetime
     summary_metrics: Dict[str, Any]
     verification_source: str = "DoCA Official Verification Registry"
+    verification_status: Optional[str] = "VALID"
+    verification_id: Optional[str] = None
+    lot_number: Optional[str] = None
+    lot_decision: Optional[str] = None
+    grade_a_percentage: Optional[float] = None
+    urs_percentage: Optional[float] = None
+    reject_percentage: Optional[float] = None
+    model_version: Optional[str] = None
+    policy_version: Optional[str] = None
+    average_diameter_mm: Optional[float] = None
 
 
 # ==============================================================================
