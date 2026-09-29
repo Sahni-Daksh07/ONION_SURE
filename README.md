@@ -1,14 +1,11 @@
 # ONION_SURE 🧅
 
-[![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-orange.svg)](https://sih.gov.in/)
-[![Problem Statement](https://img.shields.io/badge/PS26031-AI--Based%20Onion%20Grading-blue.svg)](#)
-[![Ministry](https://img.shields.io/badge/Ministry-Consumer%20Affairs%2C%20Food%20%26%20Public%20Distribution-green.svg)](#)
-[![Department](https://img.shields.io/badge/Department-Consumer%20Affairs%20(DoCA)-blueviolet.svg)](#)
+[![Problem Statement](https://img.shields.io/badge/PS26031-AI--Based%20Onion%20Quality%20Assurance%20and%20Grading-blue.svg)](#)
 [![Tests Passing](https://img.shields.io/badge/Tests-62%2F62%20Passed-brightgreen.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20PostgreSQL-teal.svg)](#)
 [![Flutter](https://img.shields.io/badge/Mobile-Flutter%203.x-02569B.svg)](#)
 
-> **Autonomous AI-Powered Onion Quality Assessment, Deterministic Grading, and Tamper-Evident Digital Reporting System** engineered for the **Department of Consumer Affairs (DoCA)** under **Smart India Hackathon 2026 (Problem Statement PS26031)**.
+> **Autonomous AI-Powered Onion Quality Assessment, Deterministic Grading, and Tamper-Evident Digital Reporting System**. 
 
 ---
 
