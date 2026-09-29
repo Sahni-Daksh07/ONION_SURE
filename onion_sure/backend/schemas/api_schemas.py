@@ -1,11 +1,43 @@
 """
 Pydantic Request and Response Schemas
 Smart India Hackathon 2026 - Problem Statement PS26031
+
+Comprehensive schemas covering:
+- Authentication & RBAC (Users, Roles, Tokens)
+- Farmers & Procurement Centres
+- Lots & Inspections
+- Image storage metadata & Optical quality
+- AI results (Detections, Defect results, Measurements)
+- Grade results, Grading policies, & Policy versions
+- Model versions & Manual reviews
+- Reports & QR verification
+- Audit logs & Offline sync queue
+- Generic pagination wrappers
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Generic, TypeVar
 from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
+
+
+T = TypeVar("T")
+
+
+# ==============================================================================
+# PAGINATION & GENERIC API RESPONSES
+# ==============================================================================
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    items: List[T]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class MessageResponse(BaseModel):
+    message: str
+    detail: Optional[str] = None
 
 
 # ==============================================================================
@@ -21,6 +53,60 @@ class HealthResponse(BaseModel):
 
 
 # ==============================================================================
+# AUTHENTICATION & RBAC SCHEMAS
+# ==============================================================================
+
+class RoleResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserRegisterRequest(BaseModel):
+    email: EmailStr
+    full_name: str
+    password: str = Field(..., min_length=6)
+    phone: Optional[str] = None
+    procurement_centre_id: Optional[str] = None
+    role_names: List[str] = Field(default_factory=lambda: ["INSPECTOR"])
+
+
+class UserLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in_seconds: int
+    user_id: str
+    email: str
+    full_name: str
+    roles: List[str]
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    phone: Optional[str] = None
+    procurement_centre_id: Optional[str] = None
+    is_active: bool
+    is_superuser: bool
+    roles: List[RoleResponse] = Field(default_factory=list)
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==============================================================================
 # FARMER & PROCUREMENT CENTRE SCHEMAS
 # ==============================================================================
 
@@ -32,6 +118,15 @@ class FarmerCreate(BaseModel):
     district: str = Field(..., json_schema_extra={"example": "Nashik"})
     state: str = Field(..., json_schema_extra={"example": "Maharashtra"})
     aadhaar_masked: Optional[str] = Field(None, json_schema_extra={"example": "XXXXXXXX1234"})
+
+
+class FarmerUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    village: Optional[str] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    aadhaar_masked: Optional[str] = None
 
 
 class FarmerResponse(FarmerCreate):
@@ -67,6 +162,13 @@ class LotCreate(BaseModel):
     bag_count: Optional[int] = Field(None, json_schema_extra={"example": 100})
 
 
+class LotUpdate(BaseModel):
+    variety: Optional[str] = None
+    quantity_quintals: Optional[float] = Field(None, gt=0)
+    bag_count: Optional[int] = None
+    status: Optional[str] = None
+
+
 class LotResponse(LotCreate):
     id: str
     status: str
@@ -83,6 +185,10 @@ class InspectionCreate(BaseModel):
     inspector_id: str
     inspection_code: Optional[str] = None
     sample_size: int = Field(default=0, ge=0)
+
+
+class InspectionStatusUpdate(BaseModel):
+    status: str  # DRAFT, CAPTURING, PROCESSING, REVIEW_REQUIRED, COMPLETED, FAILED
 
 
 class InspectionResponse(BaseModel):
@@ -137,7 +243,51 @@ class ImageMetadataResponse(ImageMetadataCreate):
 
 
 # ==============================================================================
-# GRADING PERSISTENCE SCHEMAS
+# AI RESULTS SCHEMAS (DETECTIONS, DEFECTS, MEASUREMENTS)
+# ==============================================================================
+
+class OnionDetectionResponse(BaseModel):
+    id: str
+    image_id: str
+    onion_index: str
+    bbox_x: float
+    bbox_y: float
+    bbox_w: float
+    bbox_h: float
+    detection_confidence: float
+    segmentation_polygon: Optional[List[Any]] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DefectResultResponse(BaseModel):
+    id: str
+    detection_id: str
+    defect_class: str
+    confidence: float
+    all_probabilities: Dict[str, float] = Field(default_factory=dict)
+    model_version_id: Optional[str] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MeasurementResponse(BaseModel):
+    id: str
+    detection_id: str
+    status: str
+    diameter_mm: Optional[float] = None
+    diameter_min_mm: Optional[float] = None
+    diameter_max_mm: Optional[float] = None
+    diameter_pixels: float
+    calibration_method: Optional[str] = None
+    calibration_confidence: float
+    pixels_per_mm: Optional[float] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==============================================================================
+# GRADING PERSISTENCE & RESULTS
 # ==============================================================================
 
 class PersistGradingObservation(BaseModel):
@@ -173,6 +323,62 @@ class GradeResultResponse(BaseModel):
     grading_policy_version_id: str
     model_version_id: Optional[str]
     requires_review: bool
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==============================================================================
+# GRADING POLICY & VERSIONING SCHEMAS
+# ==============================================================================
+
+class GradingPolicyCreate(BaseModel):
+    code: str
+    name: str
+    crop: str = "Onion"
+    is_active: bool = True
+
+
+class GradingPolicyResponse(GradingPolicyCreate):
+    id: str
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GradingPolicyVersionCreate(BaseModel):
+    policy_id: str
+    version: str
+    configuration: Dict[str, Any]
+    effective_from: Optional[datetime] = None
+
+
+class GradingPolicyVersionResponse(BaseModel):
+    id: str
+    policy_id: str
+    version: str
+    configuration: Dict[str, Any]
+    effective_from: datetime
+    effective_until: Optional[datetime] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==============================================================================
+# MODEL VERSIONING SCHEMAS
+# ==============================================================================
+
+class ModelVersionCreate(BaseModel):
+    model_name: str
+    version: str
+    model_type: str
+    artifact_reference: str
+    dataset_version: str = "1.0.0"
+    metrics_summary: Dict[str, Any] = Field(default_factory=dict)
+    status: str = "ACTIVE"
+
+
+class ModelVersionResponse(ModelVersionCreate):
+    id: str
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
@@ -214,3 +420,66 @@ class ReportResponse(BaseModel):
     generated_at: datetime
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+
+class ReportVerifyResponse(BaseModel):
+    is_valid: bool
+    report_code: str
+    inspection_id: str
+    qr_verification_hash: str
+    generated_at: datetime
+    summary_metrics: Dict[str, Any]
+    verification_source: str = "DoCA Official Verification Registry"
+
+
+# ==============================================================================
+# AUDIT LOG SCHEMAS
+# ==============================================================================
+
+class AuditLogResponse(BaseModel):
+    id: str
+    actor_id: Optional[str]
+    action: str
+    entity_type: str
+    entity_id: str
+    old_values: Optional[Dict[str, Any]]
+    new_values: Optional[Dict[str, Any]]
+    ip_address: Optional[str]
+    correlation_id: Optional[str]
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==============================================================================
+# OFFLINE SYNC SCHEMAS
+# ==============================================================================
+
+class SyncItemCreate(BaseModel):
+    client_id: str
+    sync_key: str  # Client-side idempotency UUID
+    entity_type: str  # Inspection, InspectionImage, GradeResult
+    entity_id: str
+    payload: Dict[str, Any]
+
+
+class SyncItemResponse(BaseModel):
+    sync_key: str
+    entity_type: str
+    entity_id: str
+    status: str  # SYNCED, CONFLICT, FAILED
+    synced_at: datetime
+    error_details: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SyncBatchRequest(BaseModel):
+    client_id: str
+    items: List[SyncItemCreate]
+
+
+class SyncBatchResponse(BaseModel):
+    client_id: str
+    processed_count: int
+    success_count: int
+    failed_count: int
+    results: List[SyncItemResponse]

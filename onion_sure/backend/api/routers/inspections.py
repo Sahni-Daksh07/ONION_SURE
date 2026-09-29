@@ -2,16 +2,29 @@
 Inspection and Grading Orchestration Router
 Smart India Hackathon 2026 - Problem Statement PS26031
 
-Connects mobile inspection workflow and deterministic grading engine to PostgreSQL.
+Features:
+- Inspection lifecycle orchestration
+- Multipart image file upload with storage abstraction (no binaries in DB)
+- Image metadata registration
+- AI observation and deterministic grading persistence
+- Manual review / grade overrides
+- Inspection finalization and report generation
+- Pagination and status filtering
 """
 
-from typing import List, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional, Union
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
 
 from ...database import get_db
-from ...models import Inspection, Report
-from ...schemas import (
+from ...models.entities import (
+    Inspection,
+    InspectionImage,
+    OnionDetection,
+    GradeResult as DBGradeResult,
+    Report,
+)
+from ...schemas.api_schemas import (
     InspectionCreate,
     InspectionResponse,
     ImageMetadataCreate,
@@ -21,9 +34,13 @@ from ...schemas import (
     ManualReviewCreate,
     ManualReviewResponse,
     ReportResponse,
+    PaginatedResponse,
+    OnionDetectionResponse,
 )
 from ...services.inspection_service import InspectionService
 from ...services.grading_persistence_service import GradingPersistenceService
+from ...services.storage_service import image_storage_service
+from ...config import settings
 
 router = APIRouter(prefix="/inspections", tags=["Inspections"])
 
@@ -62,10 +79,109 @@ def update_inspection_status(
     inspection = db.query(Inspection).filter(Inspection.id == inspection_id).first()
     if not inspection:
         raise HTTPException(status_code=404, detail="Inspection not found")
-    inspection.status = status
+    inspection.status = status.upper()
     db.commit()
     db.refresh(inspection)
     return inspection
+
+
+@router.get("", response_model=Union[PaginatedResponse[InspectionResponse], List[InspectionResponse]])
+def list_inspections(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    page: Optional[int] = Query(None, ge=1),
+    page_size: Optional[int] = Query(None, ge=1, le=100),
+    lot_id: Optional[str] = None,
+    inspector_id: Optional[str] = None,
+    status: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """Lists inspections with optional filtering and pagination."""
+    query = db.query(Inspection)
+    if lot_id:
+        query = query.filter(Inspection.lot_id == lot_id)
+    if inspector_id:
+        query = query.filter(Inspection.inspector_id == inspector_id)
+    if status:
+        query = query.filter(Inspection.status == status.upper())
+
+    total = query.count()
+
+    if page is not None:
+        p_size = page_size or 20
+        offset = (page - 1) * p_size
+        items = query.order_by(Inspection.created_at.desc()).offset(offset).limit(p_size).all()
+        total_pages = (total + p_size - 1) // p_size if total > 0 else 1
+        return PaginatedResponse(
+            items=items,
+            total=total,
+            page=page,
+            page_size=p_size,
+            total_pages=total_pages,
+        )
+
+    return query.order_by(Inspection.created_at.desc()).offset(skip).limit(limit).all()
+
+
+# ==============================================================================
+# IMAGE UPLOAD & METADATA ATTACHMENT
+# ==============================================================================
+
+@router.post("/{inspection_id}/upload-image", response_model=ImageMetadataResponse, status_code=status.HTTP_201_CREATED)
+async def upload_inspection_image(
+    inspection_id: str,
+    file: UploadFile = File(...),
+    calibration_detected: bool = Form(False),
+    pixels_per_mm: Optional[float] = Form(None),
+    calibration_method: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+):
+    """
+    Accepts multipart image file upload:
+    - Validates file content type and size limits
+    - Stores file using ImageStorageService abstraction (local / S3)
+    - Records metadata, SHA256, and optical quality in PostgreSQL (NO binary stored in DB)
+    """
+    inspection = db.query(Inspection).filter(Inspection.id == inspection_id).first()
+    if not inspection:
+        raise HTTPException(status_code=404, detail="Inspection not found")
+
+    # Validate content type
+    allowed_types = ["image/jpeg", "image/png", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported image type '{file.content_type}'. Must be one of {allowed_types}",
+        )
+
+    content = await file.read()
+    max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"Image exceeds maximum permitted size of {settings.MAX_UPLOAD_SIZE_MB}MB",
+        )
+
+    # Store via storage provider
+    storage_meta = image_storage_service.save_image(
+        content=content,
+        filename=file.filename or "capture.jpg",
+        content_type=file.content_type or "image/jpeg",
+    )
+
+    return InspectionService.attach_image_metadata(
+        db=db,
+        inspection_id=inspection_id,
+        storage_key=storage_meta["storage_key"],
+        filename=storage_meta["filename"],
+        file_size_bytes=storage_meta["file_size_bytes"],
+        content_type=storage_meta["content_type"],
+        sha256_hash=storage_meta["sha256_hash"],
+        quality_status="PASSED",
+        calibration_detected=calibration_detected,
+        pixels_per_mm=pixels_per_mm,
+        calibration_method=calibration_method,
+    )
 
 
 @router.post("/{inspection_id}/images", response_model=ImageMetadataResponse, status_code=status.HTTP_201_CREATED)
@@ -74,7 +190,7 @@ def attach_inspection_image_metadata(
     img_in: ImageMetadataCreate,
     db: Session = Depends(get_db),
 ):
-    """Stores validated image metadata without storing large binaries in PostgreSQL."""
+    """Attaches validated image metadata without storing large binaries in PostgreSQL."""
     inspection = db.query(Inspection).filter(Inspection.id == inspection_id).first()
     if not inspection:
         raise HTTPException(status_code=404, detail="Inspection not found")
@@ -97,6 +213,27 @@ def attach_inspection_image_metadata(
         calibration_method=img_in.calibration_method,
     )
 
+
+@router.get("/{inspection_id}/images", response_model=List[ImageMetadataResponse])
+def list_inspection_images(inspection_id: str, db: Session = Depends(get_db)):
+    """Lists all images associated with an inspection."""
+    return db.query(InspectionImage).filter(InspectionImage.inspection_id == inspection_id).all()
+
+
+@router.get("/{inspection_id}/detections", response_model=List[OnionDetectionResponse])
+def list_inspection_detections(inspection_id: str, db: Session = Depends(get_db)):
+    """Lists individual onion detections for all images in an inspection."""
+    return (
+        db.query(OnionDetection)
+        .join(InspectionImage, OnionDetection.image_id == InspectionImage.id)
+        .filter(InspectionImage.inspection_id == inspection_id)
+        .all()
+    )
+
+
+# ==============================================================================
+# GRADING, REVIEWS, AND FINALIZATION
+# ==============================================================================
 
 @router.post("/{inspection_id}/grade", response_model=List[GradeResultResponse])
 def evaluate_and_persist_grading(
@@ -123,16 +260,19 @@ def evaluate_and_persist_grading(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/{inspection_id}/grade-results", response_model=List[GradeResultResponse])
+def list_inspection_grade_results(inspection_id: str, db: Session = Depends(get_db)):
+    """Lists all individual onion grade results and decision traces for an inspection."""
+    return db.query(DBGradeResult).filter(DBGradeResult.inspection_id == inspection_id).all()
+
+
 @router.post("/{inspection_id}/manual-review", response_model=ManualReviewResponse)
 def submit_manual_review(
     inspection_id: str,
     review_in: ManualReviewCreate,
     db: Session = Depends(get_db),
 ):
-    """
-    Submits an inspector/supervisor grade override:
-    Records original vs new grade, reason, reviewer, and decision trace step.
-    """
+    """Submits a human inspector grade override with audit trail."""
     try:
         return InspectionService.apply_manual_review(
             db=db,

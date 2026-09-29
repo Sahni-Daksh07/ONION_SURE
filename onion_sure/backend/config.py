@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "development-secret-key-replace-in-production-min-32-chars"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # PostgreSQL Database
     DATABASE_URL: str = "postgresql+psycopg://onion_sure_app:onion_sure_secure_password_2026@localhost:5432/onion_sure"

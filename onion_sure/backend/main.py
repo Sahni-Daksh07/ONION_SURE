@@ -3,16 +3,37 @@ FastAPI Backend Application Entrypoint
 Smart India Hackathon 2026 - Problem Statement PS26031
 
 AI-based Onion Quality Assessment and Deterministic Grading Platform
+Features:
+- Complete REST API routing under /api/v1
+- Lifespan connection monitoring
+- CORS and request logging middleware with request timing
+- Standardized error handling
 """
 
+import time
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 
 from .config import settings
 from .database import check_database_connection
-from .api.routers import health, farmers, procurement_centres, lots, inspections
+from .api.routers import (
+    health,
+    auth,
+    users,
+    farmers,
+    procurement_centres,
+    lots,
+    inspections,
+    grading_policies,
+    model_versions,
+    reports,
+    audit_logs,
+    sync,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("onion_sure")
@@ -22,14 +43,17 @@ logger = logging.getLogger("onion_sure")
 async def lifespan(app: FastAPI):
     # Startup: Verify database connection
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
-    db_ok = check_database_connection()
-    if db_ok:
-        logger.info("Database connection verified successfully.")
-    else:
-        logger.warning(
-            "Database connection could not be established on startup. "
-            "Ensure PostgreSQL is running via 'docker compose up -d' or DATABASE_URL is configured."
-        )
+    try:
+        db_ok = check_database_connection()
+        if db_ok:
+            logger.info("Database connection verified successfully.")
+        else:
+            logger.warning(
+                "Database connection could not be established on startup. "
+                "Ensure PostgreSQL is running via 'docker compose up -d' or DATABASE_URL is configured."
+            )
+    except Exception as e:
+        logger.warning(f"Database check skipped during startup: {e}")
     yield
     # Shutdown
     logger.info("Shutting down application...")
@@ -51,12 +75,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# Structured Request Logging Middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    duration_ms = round((time.time() - start_time) * 1000, 2)
+    logger.info(
+        f"{request.method} {request.url.path} returned {response.status_code} in {duration_ms}ms"
+    )
+    return response
+
+
+# Standardized Validation Error Handler
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "success": False,
+            "error_code": "VALIDATION_ERROR",
+            "message": "Invalid request parameters or payload",
+            "details": exc.errors(),
+        },
+    )
+
+
 # Register Routers
 app.include_router(health.router)
+app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
+app.include_router(users.router, prefix=settings.API_V1_PREFIX)
 app.include_router(farmers.router, prefix=settings.API_V1_PREFIX)
 app.include_router(procurement_centres.router, prefix=settings.API_V1_PREFIX)
 app.include_router(lots.router, prefix=settings.API_V1_PREFIX)
 app.include_router(inspections.router, prefix=settings.API_V1_PREFIX)
+app.include_router(grading_policies.router, prefix=settings.API_V1_PREFIX)
+app.include_router(model_versions.router, prefix=settings.API_V1_PREFIX)
+app.include_router(reports.router, prefix=settings.API_V1_PREFIX)
+app.include_router(audit_logs.router, prefix=settings.API_V1_PREFIX)
+app.include_router(sync.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")
@@ -68,4 +126,5 @@ def root_info():
         "version": settings.APP_VERSION,
         "docs_url": "/docs",
         "health_check": "/health",
+        "api_v1_prefix": settings.API_V1_PREFIX,
     }

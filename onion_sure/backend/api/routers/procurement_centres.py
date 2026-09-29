@@ -1,15 +1,24 @@
 """
 Procurement Centre Management Router
 Smart India Hackathon 2026 - Problem Statement PS26031
+
+Features:
+- Registration and uniqueness check
+- Retrieval by ID
+- Pagination and geographic filtering (district, state)
 """
 
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional, Union
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ...database import get_db
-from ...models import ProcurementCentre
-from ...schemas import ProcurementCentreCreate, ProcurementCentreResponse
+from ...models.entities import ProcurementCentre
+from ...schemas.api_schemas import (
+    ProcurementCentreCreate,
+    ProcurementCentreResponse,
+    PaginatedResponse,
+)
 
 router = APIRouter(prefix="/procurement-centres", tags=["Procurement Centres"])
 
@@ -42,7 +51,36 @@ def get_procurement_centre(centre_id: str, db: Session = Depends(get_db)):
     return centre
 
 
-@router.get("", response_model=List[ProcurementCentreResponse])
-def list_procurement_centres(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
-    """Lists registered procurement centres."""
-    return db.query(ProcurementCentre).offset(skip).limit(limit).all()
+@router.get("", response_model=Union[PaginatedResponse[ProcurementCentreResponse], List[ProcurementCentreResponse]])
+def list_procurement_centres(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    page: Optional[int] = Query(None, ge=1),
+    page_size: Optional[int] = Query(None, ge=1, le=100),
+    district: Optional[str] = None,
+    state: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """Lists registered procurement centres with optional filters and pagination."""
+    query = db.query(ProcurementCentre)
+    if district:
+        query = query.filter(ProcurementCentre.district.ilike(district))
+    if state:
+        query = query.filter(ProcurementCentre.state.ilike(state))
+
+    total = query.count()
+
+    if page is not None:
+        p_size = page_size or 20
+        offset = (page - 1) * p_size
+        items = query.order_by(ProcurementCentre.created_at.desc()).offset(offset).limit(p_size).all()
+        total_pages = (total + p_size - 1) // p_size if total > 0 else 1
+        return PaginatedResponse(
+            items=items,
+            total=total,
+            page=page,
+            page_size=p_size,
+            total_pages=total_pages,
+        )
+
+    return query.order_by(ProcurementCentre.created_at.desc()).offset(skip).limit(limit).all()

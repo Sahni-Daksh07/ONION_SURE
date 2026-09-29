@@ -1,7 +1,34 @@
 """
 Backend API Routers Package
+Smart India Hackathon 2026 - Problem Statement PS26031
 """
 
-from . import health, farmers, procurement_centres, lots, inspections
+from . import (
+    health,
+    auth,
+    users,
+    farmers,
+    procurement_centres,
+    lots,
+    inspections,
+    grading_policies,
+    model_versions,
+    reports,
+    audit_logs,
+    sync,
+)
 
-__all__ = ["health", "farmers", "procurement_centres", "lots", "inspections"]
+__all__ = [
+    "health",
+    "auth",
+    "users",
+    "farmers",
+    "procurement_centres",
+    "lots",
+    "inspections",
+    "grading_policies",
+    "model_versions",
+    "reports",
+    "audit_logs",
+    "sync",
+]

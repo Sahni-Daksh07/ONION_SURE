@@ -211,6 +211,7 @@ class InspectionService:
             generated_at=now,
         )
         db.add(report)
+        db.flush()
 
         inspection.status = "COMPLETED"
         inspection.finalized_at = now
