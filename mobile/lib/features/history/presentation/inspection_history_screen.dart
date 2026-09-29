@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/sync_status_badge.dart';
+import '../../../core/storage/sync_queue_manager.dart';
 import '../../inspection/repository/inspection_repository.dart';
 import '../../inspection/models/inspection_model.dart';
 
@@ -161,10 +163,14 @@ class _InspectionHistoryScreenState extends State<InspectionHistoryScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  insp.inspectionCode,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                Expanded(
+                  child: Text(
+                    insp.inspectionCode,
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                  ),
                 ),
+                _buildSyncBadgeForInspection(insp),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -197,6 +203,26 @@ class _InspectionHistoryScreenState extends State<InspectionHistoryScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSyncBadgeForInspection(InspectionModel insp) {
+    final syncManager = context.watch<SyncQueueManager>();
+    final match = syncManager.queue.where((i) => i.entityId == insp.id).toList();
+
+    SyncStatus status = SyncStatus.synced;
+    if (match.isNotEmpty) {
+      status = match.last.status;
+    }
+
+    return SyncStatusBadge(
+      status: status,
+      onRetry: () => syncManager.syncPendingBatch(),
+      onAction: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Inspection ${insp.inspectionCode} requires supervisor review before sync.")),
+        );
+      },
     );
   }
 }

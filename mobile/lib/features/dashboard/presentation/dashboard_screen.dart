@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../../core/widgets/sync_status_badge.dart';
 import '../../../core/storage/sync_queue_manager.dart';
+import '../../../core/network/network_info.dart';
 import '../../auth/repository/auth_repository.dart';
 import '../../procurement_centre/repository/centre_repository.dart';
 import '../../lot/repository/lot_repository.dart';
@@ -43,6 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final lotRepo = context.watch<LotRepository>();
     final inspRepo = context.watch<InspectionRepository>();
     final syncManager = context.watch<SyncQueueManager>();
+    final networkInfo = NetworkInfo.instance;
 
     final user = authRepo.currentUser;
     final activeCentre = centreRepo.activeCentre;
@@ -67,6 +70,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              networkInfo.isAirplaneMode ? Icons.airplanemode_active : Icons.wifi,
+              color: networkInfo.isAirplaneMode ? Colors.amberAccent : Colors.white,
+            ),
+            tooltip: networkInfo.isAirplaneMode
+                ? "Airplane Mode: ON (Offline)"
+                : "Network: ONLINE (Tap to toggle Airplane Mode)",
+            onPressed: () {
+              setState(() {
+                networkInfo.toggleAirplaneMode();
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    networkInfo.isAirplaneMode
+                        ? "Airplane Mode Enabled - Inspections stored locally"
+                        : "Network Restored - Online Mode Active",
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+          ),
+          if (syncManager.pendingCount > 0 || syncManager.failedCount > 0)
+            IconButton(
+              icon: const Icon(Icons.sync),
+              tooltip: "Synchronize Pending Queue (${syncManager.pendingCount})",
+              onPressed: () => syncManager.syncPendingBatch(),
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: "Refresh Dashboard",
@@ -426,20 +459,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
           "Evaluated: ${insp.totalOnionsEvaluated} onions",
           style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
         ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: badgeBg,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: badgeColor,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: badgeBg,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: badgeColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10.5,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 4),
+            SyncStatusBadge(
+              status: insp.syncStatus ?? SyncStatus.synced,
+              compact: true,
+            ),
+          ],
         ),
         onTap: () {
           Navigator.pushNamed(context, '/history');
