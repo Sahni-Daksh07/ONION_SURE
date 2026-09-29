@@ -76,7 +76,7 @@ class ReportService:
         img = qr.make_image(fill_color="#1E293B", back_color="#FFFFFF")
 
         buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
+        img.save(buffer)
         return buffer.getvalue()
 
     @classmethod

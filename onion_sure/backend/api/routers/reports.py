@@ -8,6 +8,7 @@ Endpoints:
 - GET /reports/verify/{qr_hash} : Public verification endpoint for QR code certificate verification
 """
 
+from datetime import datetime
 from typing import List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
