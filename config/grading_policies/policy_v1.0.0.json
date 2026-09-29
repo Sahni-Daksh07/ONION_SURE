@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "name": "Standard DoCA Procurement Specification",
+  "effective_date": "2026-01-01",
+  "description": "Standard deterministic grading policy for Smart India Hackathon 2026 PS26031.",
+  "confidence_thresholds": {
+    "minimum_detection_confidence": 0.70,
+    "minimum_defect_confidence": 0.60,
+    "manual_review_below": 0.50
+  },
+  "size_thresholds": {
+    "undersized_max_diameter_mm": 40.0,
+    "grade_a_min_diameter_mm": 50.0
+  },
+  "defect_rules": {
+    "reject_defects": ["ROTTEN", "SPROUTED"],
+    "severe_damage_confidence_threshold": 0.80,
+    "minor_damage_urs_allowed": true,
+    "healthy_urs_allowed_when_unmeasured": true
+  },
+  "lot_aggregation_rules": {
+    "urs_tolerance_percent": 10.0,
+    "reject_tolerance_percent": 2.0
+  }
+}

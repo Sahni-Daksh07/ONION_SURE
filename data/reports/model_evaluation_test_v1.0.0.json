@@ -1,0 +1,54 @@
+{
+  "evaluation_name": "Test Set Model Evaluation",
+  "timestamp": "2026-09-29T19:41:07.055680+00:00",
+  "model_file": "ml/weights/classifier-v1.0.0.joblib",
+  "test_split_file": "data/splits/test.txt",
+  "total_test_samples_evaluated": 400,
+  "overall_metrics": {
+    "accuracy": 0.77,
+    "precision_macro": 0.7739,
+    "recall_macro": 0.77,
+    "f1_macro": 0.7692
+  },
+  "classes": [
+    "HEALTHY",
+    "UNHEALTHY"
+  ],
+  "confusion_matrix": [
+    [
+      142,
+      58
+    ],
+    [
+      34,
+      166
+    ]
+  ],
+  "per_class_breakdown": {
+    "HEALTHY": {
+      "precision": 0.8068181818181818,
+      "recall": 0.71,
+      "f1-score": 0.7553191489361702,
+      "support": 200.0
+    },
+    "UNHEALTHY": {
+      "precision": 0.7410714285714286,
+      "recall": 0.83,
+      "f1-score": 0.7830188679245284,
+      "support": 200.0
+    },
+    "accuracy": 0.77,
+    "macro avg": {
+      "precision": 0.7739448051948052,
+      "recall": 0.77,
+      "f1-score": 0.7691690084303493,
+      "support": 400.0
+    },
+    "weighted avg": {
+      "precision": 0.7739448051948051,
+      "recall": 0.77,
+      "f1-score": 0.7691690084303494,
+      "support": 400.0
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "version": "1.2.0_relaxed",
+  "name": "Relaxed Buffer Procurement Policy",
+  "effective_date": "2026-06-01",
+  "description": "Relaxed specifications for buffer stocking during market stabilization interventions.",
+  "confidence_thresholds": {
+    "minimum_detection_confidence": 0.60,
+    "minimum_defect_confidence": 0.50,
+    "manual_review_below": 0.40
+  },
+  "size_thresholds": {
+    "undersized_max_diameter_mm": 35.0,
+    "grade_a_min_diameter_mm": 45.0
+  },
+  "defect_rules": {
+    "reject_defects": ["ROTTEN", "SPROUTED"],
+    "severe_damage_confidence_threshold": 0.85,
+    "minor_damage_urs_allowed": true,
+    "healthy_urs_allowed_when_unmeasured": true
+  },
+  "lot_aggregation_rules": {
+    "urs_tolerance_percent": 25.0,
+    "reject_tolerance_percent": 5.0
+  }
+}

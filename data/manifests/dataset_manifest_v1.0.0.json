@@ -1,0 +1,521 @@
+{
+  "manifest_version": "1.0.0",
+  "dataset_name": "ONION_SURE_Source_V1",
+  "created_at": "2026-09-29T19:28:18.955477+00:00",
+  "source_directory": "Red and White Onion Dataset/New Onion",
+  "summary": {
+    "total_images_scanned": 24000,
+    "valid_images": 24000,
+    "corrupted_images": 0,
+    "exact_duplicate_groups": 0,
+    "perceptual_duplicate_clusters": 103
+  },
+  "class_distribution": {
+    "by_part_and_condition": {
+      "Bulb/Healthy": 12367,
+      "Bulb/Unhealthy": 5461,
+      "Leaves/Healthy": 3104,
+      "Leaves/Unhealthy": 3068
+    },
+    "by_part": {
+      "Bulb": 17828,
+      "Leaves": 6172
+    },
+    "by_condition": {
+      "Healthy": 15471,
+      "Unhealthy": 8529
+    },
+    "detailed_hierarchy": {
+      "Bulb/Healthy/Mixed/1WO9RO": 412,
+      "Bulb/Healthy/Mixed/2WO8RO": 181,
+      "Bulb/Healthy/Mixed/3WO7RO": 184,
+      "Bulb/Healthy/Mixed/4WO6RO": 169,
+      "Bulb/Healthy/Mixed/5WO5RO": 144,
+      "Bulb/Healthy/Mixed/6WO4RO": 176,
+      "Bulb/Healthy/Mixed/7WO3RO": 182,
+      "Bulb/Healthy/Mixed/8WO2RO": 186,
+      "Bulb/Healthy/Mixed/9WO1RO": 195,
+      "Bulb/Healthy/Red Onion/Multiple": 1598,
+      "Bulb/Healthy/Red Onion/Single": 3030,
+      "Bulb/Healthy/White Onion/Multiple": 2573,
+      "Bulb/Healthy/White Onion/Single": 3337,
+      "Bulb/Unhealthy/Red Onion/Multiple": 1328,
+      "Bulb/Unhealthy/Red Onion/Single": 1341,
+      "Bulb/Unhealthy/White Onion/Multiple": 1403,
+      "Bulb/Unhealthy/White Onion/Single": 1389,
+      "Leaves/Healthy/Multiple": 1568,
+      "Leaves/Healthy/Single": 1536,
+      "Leaves/Unhealthy/Multiple": 1560,
+      "Leaves/Unhealthy/Single": 1508
+    }
+  },
+  "class_imbalance": {
+    "bulb": {
+      "healthy_count": 12367,
+      "unhealthy_count": 5461,
+      "imbalance_ratio": "2.26:1 (Healthy:Unhealthy)",
+      "healthy_percentage": 69.37,
+      "unhealthy_percentage": 30.63,
+      "mitigation_required": "Class-weighted loss function or stratified re-sampling for Bulb training."
+    },
+    "leaves": {
+      "healthy_count": 3104,
+      "unhealthy_count": 3068,
+      "imbalance_ratio": "1.01:1 (Healthy:Unhealthy)",
+      "healthy_percentage": 50.29,
+      "unhealthy_percentage": 49.71,
+      "status": "Balanced distribution (nearly 1:1 ratio)."
+    }
+  },
+  "quality_metrics": {
+    "dimensions_distribution": {
+      "1024x768": 18617,
+      "576x768": 5383
+    },
+    "blur_laplacian_variance": {
+      "mean": 499.22,
+      "std": 810.59,
+      "min": 2.83,
+      "max": 6811.66,
+      "blurry_images_flagged": 6199,
+      "blurry_percentage": 25.83
+    },
+    "brightness_luminance_0_to_255": {
+      "mean": 123.55,
+      "std": 23.97,
+      "underexposed_flagged": 99,
+      "underexposed_percentage": 0.41,
+      "overexposed_flagged": 1,
+      "overexposed_percentage": 0.0
+    },
+    "contrast_standard_deviation": {
+      "mean": 42.44,
+      "std": 12.64
+    }
+  },
+  "label_gap_audit": {
+    "source_dataset_available_labels": [
+      {
+        "part": "Bulb",
+        "condition": "Healthy",
+        "subcategories": [
+          "Mixed (1WO9RO-9WO1RO)",
+          "Red Onion",
+          "White Onion"
+        ]
+      },
+      {
+        "part": "Bulb",
+        "condition": "Unhealthy",
+        "subcategories": [
+          "Red Onion",
+          "White Onion"
+        ]
+      },
+      {
+        "part": "Leaves",
+        "condition": "Healthy",
+        "subcategories": [
+          "Multiple",
+          "Single"
+        ]
+      },
+      {
+        "part": "Leaves",
+        "condition": "Unhealthy",
+        "subcategories": [
+          "Multiple",
+          "Single"
+        ]
+      }
+    ],
+    "ps26031_mandatory_labels": [
+      "healthy",
+      "damaged",
+      "rotten",
+      "sprouted",
+      "undersized (physical measurement)"
+    ],
+    "gap_summary": {
+      "label_fabrication_prohibited": true,
+      "unhealthy_class_nature": "Coarse superset containing unknown proportions of rot, physical damage, and sprouting.",
+      "missing_fine_grained_labels": [
+        "damaged",
+        "rotten",
+        "sprouted"
+      ],
+      "missing_instance_annotations": "Bounding boxes for multi-onion images (Mixed and Multiple classes).",
+      "missing_calibration_references": "Physical scale reference (ArUco / coin / ruler) for millimeter sizing.",
+      "recommendation": "Maintain Healthy as ground-truth healthy; establish evidence-based sub-annotation workflow to partition Unhealthy."
+    }
+  },
+  "splits": {
+    "train": {
+      "count": 16800,
+      "percentage": 70.0
+    },
+    "val": {
+      "count": 3598,
+      "percentage": 14.99
+    },
+    "test": {
+      "count": 3602,
+      "percentage": 15.01
+    }
+  },
+  "strata_splits": {
+    "Bulb/Healthy/Mixed/1WO9RO": {
+      "total": 412,
+      "train": 288,
+      "val": 62,
+      "test": 62,
+      "train_pct": 69.9
+    },
+    "Bulb/Healthy/Mixed/2WO8RO": {
+      "total": 181,
+      "train": 127,
+      "val": 27,
+      "test": 27,
+      "train_pct": 70.17
+    },
+    "Bulb/Healthy/Mixed/3WO7RO": {
+      "total": 184,
+      "train": 129,
+      "val": 28,
+      "test": 27,
+      "train_pct": 70.11
+    },
+    "Bulb/Healthy/Mixed/4WO6RO": {
+      "total": 169,
+      "train": 118,
+      "val": 25,
+      "test": 26,
+      "train_pct": 69.82
+    },
+    "Bulb/Healthy/Mixed/5WO5RO": {
+      "total": 144,
+      "train": 101,
+      "val": 22,
+      "test": 21,
+      "train_pct": 70.14
+    },
+    "Bulb/Healthy/Mixed/6WO4RO": {
+      "total": 176,
+      "train": 123,
+      "val": 26,
+      "test": 27,
+      "train_pct": 69.89
+    },
+    "Bulb/Healthy/Mixed/7WO3RO": {
+      "total": 182,
+      "train": 127,
+      "val": 27,
+      "test": 28,
+      "train_pct": 69.78
+    },
+    "Bulb/Healthy/Mixed/8WO2RO": {
+      "total": 186,
+      "train": 130,
+      "val": 28,
+      "test": 28,
+      "train_pct": 69.89
+    },
+    "Bulb/Healthy/Mixed/9WO1RO": {
+      "total": 195,
+      "train": 136,
+      "val": 29,
+      "test": 30,
+      "train_pct": 69.74
+    },
+    "Bulb/Healthy/Red Onion/Multiple": {
+      "total": 1598,
+      "train": 1119,
+      "val": 240,
+      "test": 239,
+      "train_pct": 70.03
+    },
+    "Bulb/Healthy/Red Onion/Single": {
+      "total": 3030,
+      "train": 2121,
+      "val": 454,
+      "test": 455,
+      "train_pct": 70.0
+    },
+    "Bulb/Healthy/White Onion/Multiple": {
+      "total": 2573,
+      "train": 1801,
+      "val": 386,
+      "test": 386,
+      "train_pct": 70.0
+    },
+    "Bulb/Healthy/White Onion/Single": {
+      "total": 3337,
+      "train": 2336,
+      "val": 501,
+      "test": 500,
+      "train_pct": 70.0
+    },
+    "Bulb/Unhealthy/Red Onion/Multiple": {
+      "total": 1328,
+      "train": 930,
+      "val": 199,
+      "test": 199,
+      "train_pct": 70.03
+    },
+    "Bulb/Unhealthy/Red Onion/Single": {
+      "total": 1341,
+      "train": 939,
+      "val": 201,
+      "test": 201,
+      "train_pct": 70.02
+    },
+    "Bulb/Unhealthy/White Onion/Multiple": {
+      "total": 1403,
+      "train": 982,
+      "val": 210,
+      "test": 211,
+      "train_pct": 69.99
+    },
+    "Bulb/Unhealthy/White Onion/Single": {
+      "total": 1389,
+      "train": 972,
+      "val": 208,
+      "test": 209,
+      "train_pct": 69.98
+    },
+    "Leaves/Healthy/Multiple": {
+      "total": 1568,
+      "train": 1098,
+      "val": 235,
+      "test": 235,
+      "train_pct": 70.03
+    },
+    "Leaves/Healthy/Single": {
+      "total": 1536,
+      "train": 1075,
+      "val": 230,
+      "test": 231,
+      "train_pct": 69.99
+    },
+    "Leaves/Unhealthy/Multiple": {
+      "total": 1560,
+      "train": 1092,
+      "val": 234,
+      "test": 234,
+      "train_pct": 70.0
+    },
+    "Leaves/Unhealthy/Single": {
+      "total": 1508,
+      "train": 1056,
+      "val": 226,
+      "test": 226,
+      "train_pct": 70.03
+    }
+  },
+  "corrupt_file_details": [],
+  "perceptual_duplicate_clusters_sample": [
+    {
+      "cluster_id": "cluster_00050",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/1WO9RO/Onion 00051.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/1WO9RO/Onion 00050.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_00052",
+      "count": 3,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/1WO9RO/Onion 00054.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/1WO9RO/Onion 00055.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/1WO9RO/Onion 00056.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_00133",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/1WO9RO/Onion 00137.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/1WO9RO/Onion 00136.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_00491",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/2WO8RO/Onion 00495.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/2WO8RO/Onion 00496.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_00972",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/5WO5RO/Onion 00977.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/5WO5RO/Onion 00978.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_01092",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/6WO4RO/Onion 01099.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/6WO4RO/Onion 01098.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_01399",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/7WO3RO/Onion 01409.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Mixed/7WO3RO/Onion 01408.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_02593",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Multiple/Onion 02601.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Multiple/Onion 02602.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_02882",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Multiple/Onion 02891.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Multiple/Onion 02892.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_05405",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05416.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05415.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_05451",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05464.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05463.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_05597",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05608.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05609.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_05880",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05893.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/Red Onion/Single/Onion 05894.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06498",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06513.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06512.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06584",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06600.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06601.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06589",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06607.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06606.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06598",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06613.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06614.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06833",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06853.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06852.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06837",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06857.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06858.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06845",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06865.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06864.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06879",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06900.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06901.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_06939",
+      "count": 3,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06962.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06961.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 06965.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_07111",
+      "count": 3,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 07138.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 07136.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 07137.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_07116",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 07142.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 07143.jpg"
+      ]
+    },
+    {
+      "cluster_id": "cluster_07686",
+      "count": 2,
+      "paths": [
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 07713.jpg",
+        "Red and White Onion Dataset/New Onion/Bulb/Healthy/White Onion/Multiple/Onion 07714.jpg"
+      ]
+    }
+  ]
+}

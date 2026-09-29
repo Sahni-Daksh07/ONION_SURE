@@ -1,0 +1,42 @@
+{
+  "mobile_app": "ONION_SURE_FLUTTER",
+  "environments": {
+    "development_android_emulator": {
+      "base_url": "http://10.0.2.2:8000/api/v1",
+      "connect_timeout_ms": 10000,
+      "receive_timeout_ms": 15000
+    },
+    "development_local_network": {
+      "base_url": "http://192.168.1.100:8000/api/v1",
+      "connect_timeout_ms": 10000,
+      "receive_timeout_ms": 15000
+    },
+    "development_desktop_web": {
+      "base_url": "http://localhost:8000/api/v1",
+      "connect_timeout_ms": 10000,
+      "receive_timeout_ms": 15000
+    },
+    "production": {
+      "base_url": "https://api.onionsure.gov.in/api/v1",
+      "connect_timeout_ms": 15000,
+      "receive_timeout_ms": 20000
+    }
+  },
+  "endpoints": {
+    "health": "/health",
+    "farmers": "/farmers",
+    "procurement_centres": "/procurement-centres",
+    "lots": "/lots",
+    "inspections": "/inspections",
+    "inspection_images": "/inspections/{id}/images",
+    "grade_inspection": "/inspections/{id}/grade",
+    "manual_review": "/inspections/{id}/manual-review",
+    "finalize_inspection": "/inspections/{id}/finalize"
+  },
+  "auth_header": "Authorization: Bearer <TOKEN>",
+  "offline_sync_protocol": {
+    "idempotency_key_header": "X-Sync-Key",
+    "client_id_header": "X-Client-ID",
+    "retry_backoff": "exponential"
+  }
+}

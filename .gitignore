@@ -42,3 +42,47 @@ $RECYCLE.BIN/
 .vscode/
 *.swp
 *.swo
+
+# Security and Credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account.json
+
+# ML Models and Checkpoints
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.engine
+runs/
+mlruns/
+wandb/
+
+# Processed Data and Splits (Keep raw source dataset and manifests tracked)
+data/processed/
+data/splits/
+data/cache/
+
+# Databases and Storage
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+
+# Testing & Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Flutter / Mobile
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+*.apk
+*.aab
+

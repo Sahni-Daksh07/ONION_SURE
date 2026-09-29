@@ -1,0 +1,44 @@
+{
+  "model_version": "classifier-v1.0.0",
+  "model_type": "LogisticRegression (balanced class weights)",
+  "training_timestamp": "2026-09-29T19:40:33.989882+00:00",
+  "training_samples": 800,
+  "validation_samples": 200,
+  "feature_dim": 96,
+  "classes": [
+    "HEALTHY",
+    "UNHEALTHY"
+  ],
+  "metrics": {
+    "validation_accuracy": 0.835,
+    "macro_f1": 0.8347,
+    "detailed_report": {
+      "HEALTHY": {
+        "precision": 0.8073394495412844,
+        "recall": 0.88,
+        "f1-score": 0.8421052631578947,
+        "support": 100.0
+      },
+      "UNHEALTHY": {
+        "precision": 0.8681318681318682,
+        "recall": 0.79,
+        "f1-score": 0.8272251308900523,
+        "support": 100.0
+      },
+      "accuracy": 0.835,
+      "macro avg": {
+        "precision": 0.8377356588365763,
+        "recall": 0.835,
+        "f1-score": 0.8346651970239736,
+        "support": 200.0
+      },
+      "weighted avg": {
+        "precision": 0.8377356588365763,
+        "recall": 0.835,
+        "f1-score": 0.8346651970239735,
+        "support": 200.0
+      }
+    }
+  },
+  "weights_file": "ml/weights/classifier-v1.0.0.joblib"
+}

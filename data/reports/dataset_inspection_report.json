@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "title": "ONION_SURE Dataset Inspection Report",
+    "timestamp": "2026-09-29T19:13:59.234305+00:00",
+    "source_directory": "Red and White Onion Dataset/New Onion",
+    "total_images_scanned": 24000,
+    "total_valid_images": 24000,
+    "total_corrupt_images": 0,
+    "total_exact_duplicate_groups": 0,
+    "total_redundant_duplicate_images": 0
+  },
+  "class_distribution": {
+    "Bulb/Healthy": 12367,
+    "Bulb/Unhealthy": 5461,
+    "Leaves/Healthy": 3104,
+    "Leaves/Unhealthy": 3068
+  },
+  "detailed_hierarchy_distribution": {
+    "Bulb/Healthy/Mixed/1WO9RO": 412,
+    "Bulb/Healthy/Mixed/2WO8RO": 181,
+    "Bulb/Healthy/Mixed/3WO7RO": 184,
+    "Bulb/Healthy/Mixed/4WO6RO": 169,
+    "Bulb/Healthy/Mixed/5WO5RO": 144,
+    "Bulb/Healthy/Mixed/6WO4RO": 176,
+    "Bulb/Healthy/Mixed/7WO3RO": 182,
+    "Bulb/Healthy/Mixed/8WO2RO": 186,
+    "Bulb/Healthy/Mixed/9WO1RO": 195,
+    "Bulb/Healthy/Red Onion/Multiple": 1598,
+    "Bulb/Healthy/Red Onion/Single": 3030,
+    "Bulb/Healthy/White Onion/Multiple": 2573,
+    "Bulb/Healthy/White Onion/Single": 3337,
+    "Bulb/Unhealthy/Red Onion/Multiple": 1328,
+    "Bulb/Unhealthy/Red Onion/Single": 1341,
+    "Bulb/Unhealthy/White Onion/Multiple": 1403,
+    "Bulb/Unhealthy/White Onion/Single": 1389,
+    "Leaves/Healthy/Multiple": 1568,
+    "Leaves/Healthy/Single": 1536,
+    "Leaves/Unhealthy/Multiple": 1560,
+    "Leaves/Unhealthy/Single": 1508
+  },
+  "dimensions_distribution": {
+    "1024x768": 18617,
+    "576x768": 5383
+  },
+  "file_size_stats_bytes": {
+    "min": 17798,
+    "max": 405558,
+    "mean": 102175.44,
+    "total_size_mb": 2338.61
+  },
+  "corrupt_files": [],
+  "duplicate_groups_sample": []
+}
