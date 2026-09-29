@@ -46,6 +46,11 @@ async def lifespan(app: FastAPI):
     try:
         db_ok = check_database_connection()
         if db_ok:
+            from .database import engine
+            if engine.dialect.name == "sqlite":
+                from .models.entities import Base as EntityBase
+                EntityBase.metadata.create_all(bind=engine)
+                logger.info("Local SQLite tables created/verified successfully.")
             logger.info("Database connection verified successfully.")
         else:
             logger.warning(
