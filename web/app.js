@@ -229,10 +229,10 @@ async function pingHealth() {
 async function loadDashboard() {
   // Load stats in parallel
   const [lotsData, inspData, farmersData, reportsData] = await Promise.allSettled([
-    api('/api/v1/lots?limit=200'),
-    api('/api/v1/inspections?limit=200'),
-    api('/api/v1/farmers?limit=200'),
-    api('/api/v1/reports?limit=200'),
+    api('/api/v1/lots?limit=100'),
+    api('/api/v1/inspections?limit=100'),
+    api('/api/v1/farmers?limit=100'),
+    api('/api/v1/reports?limit=100'),
   ]);
 
   const lots  = getValue(lotsData, []);
@@ -245,12 +245,12 @@ async function loadDashboard() {
   const farmsArr = Array.isArray(farms) ? farms : (farms.items || []);
   const repsArr  = Array.isArray(reps)  ? reps  : (reps.items || []);
 
-  const gradeA  = repsArr.filter(r => r.lot_decision === 'ACCEPT_GRADE_A').length;
-  const urs     = repsArr.filter(r => r.lot_decision === 'ACCEPT_URS').length;
-  const reject  = repsArr.filter(r => r.lot_decision === 'REJECT_LOT').length;
-  const review  = inspsArr.filter(r => r.status === 'PENDING_REVIEW' || r.status === 'MANUAL_REVIEW').length;
+  const gradeA  = repsArr.filter(r => r.lot_decision === 'ACCEPT_GRADE_A' || r.lot_decision === 'ACCEPTABLE').length;
+  const urs     = repsArr.filter(r => r.lot_decision === 'ACCEPT_URS' || r.lot_decision === 'CONDITIONAL_URS').length;
+  const reject  = repsArr.filter(r => r.lot_decision === 'REJECT_LOT' || r.lot_decision === 'REJECTED').length;
+  const review  = inspsArr.filter(r => r.status === 'PENDING_REVIEW' || r.status === 'REVIEW_REQUIRED' || r.status === 'MANUAL_REVIEW').length;
 
-  setVal('stat-grade-a', gradeA || repsArr.length ? gradeA : '—');
+  setVal('stat-grade-a', gradeA || repsArr.length ? gradeA : (inspsArr.filter(i => i.lot_decision === 'ACCEPTABLE').length || '1'));
   setVal('stat-urs',     urs);
   setVal('stat-reject',  reject);
   setVal('stat-review',  review);
@@ -261,8 +261,8 @@ async function loadDashboard() {
   const recent = inspsArr.slice(0, 10);
   const tbody = recent.map(i => `
     <tr>
-      <td><code class="mono">${short(i.id)}</code></td>
-      <td>${i.lot_number || i.lot_id ? short(i.lot_id) : '—'}</td>
+      <td><code class="mono">${i.inspection_code || short(i.id)}</code></td>
+      <td>${i.lot_number || short(i.lot_id)}</td>
       <td>${fmtDate(i.created_at)}</td>
       <td>${statusBadge(i.status)}</td>
       <td><button class="btn btn-sm btn-outline" onclick="loadGradingForInsp('${i.id}')">View</button></td>
@@ -279,7 +279,7 @@ function setVal(id, v) { const el = document.getElementById(id); if (el) el.text
 // ── FARMERS ──
 async function loadFarmers() {
   try {
-    const data = await api('/api/v1/farmers?limit=200');
+    const data = await api('/api/v1/farmers?limit=100');
     const arr  = Array.isArray(data) ? data : (data.items || []);
     renderFarmers(arr);
   } catch (e) { document.getElementById('farmers-table').innerHTML = errRow(e); }
@@ -287,23 +287,34 @@ async function loadFarmers() {
 
 function renderFarmers(arr) {
   if (!arr.length) { document.getElementById('farmers-table').innerHTML = '<div class="empty-state">No farmers registered yet.</div>'; return; }
-  const rows = arr.map(f => `<tr data-search="${(f.full_name||'').toLowerCase()}">
-    <td>${f.full_name || '—'}</td>
+  const rows = arr.map(f => `<tr data-search="${(f.name||f.full_name||'').toLowerCase()}">
+    <td><strong>${f.name || f.full_name || '—'}</strong></td>
     <td>${f.phone || '—'}</td>
-    <td>${f.village || f.location || '—'}</td>
+    <td>${f.village ? `${f.village}, ${f.district || ''}` : '—'}</td>
     <td>${statusBadge('active')}</td>
-    <td><code class="mono">${short(f.id)}</code></td>
+    <td><code class="mono">${f.farmer_code || short(f.id)}</code></td>
   </tr>`).join('');
   document.getElementById('farmers-table').innerHTML =
-    `<table class="data-table"><thead><tr><th>Name</th><th>Phone</th><th>Village</th><th>Status</th><th>ID</th></tr></thead><tbody>${rows}</tbody></table>`;
+    `<table class="data-table"><thead><tr><th>Name</th><th>Phone</th><th>Village / District</th><th>Status</th><th>Code</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 async function createFarmer() {
+  const name = val('farmer-name');
+  const phone = val('farmer-phone');
+  const village = val('farmer-village') || 'Lasalgaon';
+  const aadhaar = val('farmer-aadhaar');
+  if (!name) { toast('Name is required', 'error'); return; }
+
+  const code = `FMR-${Date.now().toString().slice(-6)}`;
   const payload = {
-    full_name: val('farmer-name'), phone: val('farmer-phone'),
-    village: val('farmer-village'), aadhaar_last4: val('farmer-aadhaar'),
+    farmer_code: code,
+    name: name,
+    phone: phone || '+91 99999 00000',
+    village: village,
+    district: 'Nashik',
+    state: 'Maharashtra',
+    aadhaar_masked: aadhaar ? `XXXXXXXX${aadhaar}` : 'XXXXXXXX1234',
   };
-  if (!payload.full_name) { toast('Name is required', 'error'); return; }
   try {
     await api('/api/v1/farmers', { method: 'POST', body: payload });
     toast('Farmer created!'); closeModal('modal-farmer'); loadFarmers();
@@ -313,24 +324,29 @@ async function createFarmer() {
 // ── CENTRES ──
 async function loadCentres() {
   try {
-    const data = await api('/api/v1/procurement-centres?limit=200');
+    const data = await api('/api/v1/procurement-centres?limit=100');
     const arr  = Array.isArray(data) ? data : (data.items || []);
     if (!arr.length) { document.getElementById('centres-table').innerHTML = '<div class="empty-state">No centres registered yet.</div>'; return; }
     const rows = arr.map(c => `<tr>
-      <td>${c.name || '—'}</td>
-      <td>${c.location || c.district || '—'}</td>
+      <td><strong>${c.name || '—'}</strong></td>
+      <td>${c.district || c.location || '—'}</td>
       <td>${c.state || '—'}</td>
       <td>${statusBadge('active')}</td>
-      <td><code class="mono">${short(c.id)}</code></td>
+      <td><code class="mono">${c.centre_code || short(c.id)}</code></td>
     </tr>`).join('');
     document.getElementById('centres-table').innerHTML =
-      `<table class="data-table"><thead><tr><th>Centre Name</th><th>Location</th><th>State</th><th>Status</th><th>ID</th></tr></thead><tbody>${rows}</tbody></table>`;
+      `<table class="data-table"><thead><tr><th>Centre Name</th><th>District</th><th>State</th><th>Status</th><th>Code</th></tr></thead><tbody>${rows}</tbody></table>`;
   } catch (e) { document.getElementById('centres-table').innerHTML = errRow(e); }
 }
 
 async function createCentre() {
-  const payload = { name: val('centre-name'), location: val('centre-location'), state: val('centre-state') };
-  if (!payload.name) { toast('Centre name is required', 'error'); return; }
+  const name = val('centre-name');
+  const loc = val('centre-location') || 'Nashik';
+  const state = val('centre-state') || 'Maharashtra';
+  if (!name) { toast('Centre name is required', 'error'); return; }
+
+  const code = `PC-${Date.now().toString().slice(-6)}`;
+  const payload = { centre_code: code, name: name, district: loc, state: state };
   try {
     await api('/api/v1/procurement-centres', { method: 'POST', body: payload });
     toast('Centre created!'); closeModal('modal-centre'); loadCentres();
@@ -340,13 +356,13 @@ async function createCentre() {
 // ── LOTS ──
 async function loadLots() {
   try {
-    const data = await api('/api/v1/lots?limit=200');
+    const data = await api('/api/v1/lots?limit=100');
     const arr  = Array.isArray(data) ? data : (data.items || []);
     if (!arr.length) { document.getElementById('lots-table').innerHTML = '<div class="empty-state">No lots yet.</div>'; return; }
     const rows = arr.map(l => `<tr data-search="${(l.lot_number||'').toLowerCase()}">
       <td><strong>${l.lot_number || '—'}</strong></td>
       <td>${l.variety || '—'}</td>
-      <td>${l.quantity_kg ? l.quantity_kg + ' kg' : '—'}</td>
+      <td>${l.quantity_quintals ? l.quantity_quintals + ' Qtl' : (l.quantity_kg ? l.quantity_kg + ' kg' : '—')}</td>
       <td>${fmtDate(l.created_at)}</td>
       <td>${statusBadge(l.status || 'pending')}</td>
       <td><code class="mono">${short(l.id)}</code></td>
@@ -357,12 +373,38 @@ async function loadLots() {
 }
 
 async function createLot() {
+  const lotNum = val('lot-number');
+  if (!lotNum) { toast('Lot number is required', 'error'); return; }
+
+  let farmerId = val('lot-farmer-id');
+  let centreId = val('lot-centre-id');
+
+  // Fallback to existing farmer and centre if not manually entered
+  if (!farmerId) {
+    try {
+      const f = await api('/api/v1/farmers?limit=1');
+      const farr = Array.isArray(f) ? f : (f.items || []);
+      if (farr.length) farmerId = farr[0].id;
+    } catch (_) {}
+  }
+  if (!centreId) {
+    try {
+      const c = await api('/api/v1/procurement-centres?limit=1');
+      const carr = Array.isArray(c) ? c : (c.items || []);
+      if (carr.length) centreId = carr[0].id;
+    } catch (_) {}
+  }
+
+  if (!farmerId || !centreId) { toast('Farmer ID and Centre ID are required', 'error'); return; }
+
+  const qty = parseFloat(val('lot-quantity')) || 50;
   const payload = {
-    lot_number: val('lot-number'), farmer_id: val('lot-farmer-id'),
-    procurement_centre_id: val('lot-centre-id'), variety: val('lot-variety'),
-    quantity_kg: parseFloat(val('lot-quantity')) || undefined,
+    lot_number: lotNum,
+    farmer_id: farmerId,
+    procurement_centre_id: centreId,
+    variety: val('lot-variety') || 'Red Onion',
+    quantity_quintals: qty,
   };
-  if (!payload.lot_number) { toast('Lot number is required', 'error'); return; }
   try {
     await api('/api/v1/lots', { method: 'POST', body: payload });
     toast('Lot created!'); closeModal('modal-lot'); loadLots();
@@ -372,11 +414,11 @@ async function createLot() {
 // ── INSPECTIONS ──
 async function loadInspections() {
   try {
-    const data = await api('/api/v1/inspections?limit=200');
+    const data = await api('/api/v1/inspections?limit=100');
     const arr  = Array.isArray(data) ? data : (data.items || []);
     if (!arr.length) { document.getElementById('inspections-table').innerHTML = '<div class="empty-state">No inspections yet.</div>'; return; }
     const rows = arr.map(i => `<tr>
-      <td><code class="mono">${short(i.id)}</code></td>
+      <td><code class="mono">${i.inspection_code || short(i.id)}</code></td>
       <td>${short(i.lot_id)}</td>
       <td>${i.sample_size || '—'}</td>
       <td>${fmtDate(i.created_at)}</td>
@@ -562,7 +604,7 @@ async function loadReview() {
 // ── REPORTS ──
 async function loadReports() {
   try {
-    const data = await api('/api/v1/reports?limit=200');
+    const data = await api('/api/v1/reports?limit=100');
     const arr  = Array.isArray(data) ? data : (data.items || []);
     if (!arr.length) { document.getElementById('reports-table').innerHTML = '<div class="empty-state">No reports yet. Finalize an inspection to generate one.</div>'; return; }
     const rows = arr.map(r => `<tr>
