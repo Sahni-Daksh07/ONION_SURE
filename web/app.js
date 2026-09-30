@@ -123,18 +123,36 @@ function showErr(el, msg) { el.textContent = msg; el.classList.remove('hidden');
 function logout() {
   STATE.token = null; STATE.user = null;
   localStorage.removeItem('onion_token'); localStorage.removeItem('onion_user');
-  document.getElementById('screen-app').classList.remove('active');
-  document.getElementById('screen-app').classList.add('hidden');
-  document.getElementById('screen-login').classList.add('active');
+  const loginScreen = document.getElementById('screen-login');
+  const appScreen   = document.getElementById('screen-app');
+  if (appScreen) {
+    appScreen.classList.remove('active');
+    appScreen.classList.add('hidden');
+    appScreen.style.display = 'none';
+  }
+  if (loginScreen) {
+    loginScreen.classList.remove('hidden');
+    loginScreen.classList.add('active');
+    loginScreen.style.display = 'flex';
+  }
 }
 
 document.getElementById('logout-btn').addEventListener('click', logout);
 
 // ── Boot ──
 function bootApp() {
-  document.getElementById('screen-login').classList.remove('active');
-  document.getElementById('screen-app').classList.remove('hidden');
-  document.getElementById('screen-app').classList.add('active');
+  const loginScreen = document.getElementById('screen-login');
+  const appScreen   = document.getElementById('screen-app');
+  if (loginScreen) {
+    loginScreen.classList.remove('active');
+    loginScreen.classList.add('hidden');
+    loginScreen.style.display = 'none';
+  }
+  if (appScreen) {
+    appScreen.classList.remove('hidden');
+    appScreen.classList.add('active');
+    appScreen.style.display = 'flex';
+  }
   setUserUI();
   navigate('dashboard');
   pingHealth();
@@ -143,10 +161,14 @@ function bootApp() {
 function setUserUI() {
   const u = STATE.user;
   if (!u) return;
-  const name = u.full_name || u.username || 'Operator';
-  document.getElementById('user-name').textContent = name;
-  document.getElementById('user-role').textContent = u.role || 'OPERATOR';
-  document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+  const name = u.full_name || u.email || 'Inspector';
+  const role = (Array.isArray(u.roles) && u.roles.length) ? u.roles[0] : (u.role || 'INSPECTOR');
+  const nameEl = document.getElementById('user-name');
+  const roleEl = document.getElementById('user-role');
+  const avatarEl = document.getElementById('user-avatar');
+  if (nameEl) nameEl.textContent = name;
+  if (roleEl) roleEl.textContent = role;
+  if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
 }
 
 // ── Navigation ──
@@ -674,5 +696,16 @@ function statusBadge(s) {
 if (STATE.token) {
   bootApp();
 } else {
-  document.getElementById('screen-login').classList.add('active');
+  const loginScreen = document.getElementById('screen-login');
+  const appScreen   = document.getElementById('screen-app');
+  if (loginScreen) {
+    loginScreen.classList.remove('hidden');
+    loginScreen.classList.add('active');
+    loginScreen.style.display = 'flex';
+  }
+  if (appScreen) {
+    appScreen.classList.remove('active');
+    appScreen.classList.add('hidden');
+    appScreen.style.display = 'none';
+  }
 }

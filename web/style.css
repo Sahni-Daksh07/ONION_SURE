@@ -39,9 +39,12 @@ input, textarea { font-family: inherit; }
 
 /* ── Screens ── */
 .screen { width: 100%; min-height: 100vh; }
-#screen-login { display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-#screen-app   { display: none; }
+#screen-login { display: none; align-items: center; justify-content: center; position: relative; overflow: hidden; width: 100%; min-height: 100vh; }
+#screen-login.active { display: flex; }
+#screen-login.hidden { display: none !important; }
+#screen-app   { display: none; width: 100%; min-height: 100vh; }
 #screen-app.active { display: flex; }
+#screen-app.hidden { display: none !important; }
 
 /* ── Login Background ── */
 .login-bg { position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse at 20% 50%, #1a0533 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, #0a1a3a 0%, transparent 50%), var(--bg); }
