@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ONION_SURE — Quality Assessment Dashboard</title>
+  <meta name="description" content="AI-Based Onion Quality Assessment & Deterministic Grading Web Dashboard | SIH 2026 PS26031 | Department of Consumer Affairs (DoCA)" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="screen-login" class="screen active">
+  <div class="login-bg">
+    <div class="login-orb orb-1"></div>
+    <div class="login-orb orb-2"></div>
+    <div class="login-orb orb-3"></div>
+  </div>
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="logo-icon">🧅</span>
+      <div>
+        <div class="logo-title">ONION_SURE</div>
+        <div class="logo-sub">Quality Assessment Platform</div>
+      </div>
+    </div>
+    <div class="badge-row">
+      <span class="badge badge-blue">SIH 2026</span>
+      <span class="badge badge-purple">PS26031</span>
+      <span class="badge badge-green">DoCA</span>
+    </div>
+    <h2 class="login-heading">Sign in to your account</h2>
+    <div id="login-error" class="alert alert-error hidden"></div>
+    <div class="form-group">
+      <label>Username or Email</label>
+      <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" />
+    </div>
+    <button class="btn btn-primary btn-full" id="login-btn">
+      <span id="login-btn-text">Sign In</span>
+      <span id="login-btn-spinner" class="spinner hidden"></span>
+    </button>
+    <p class="login-hint">Development mode: any credentials will authenticate against the local API.</p>
+  </div>
+</div>
+
+<!-- ===== APP SHELL ===== -->
+<div id="screen-app" class="screen hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon-sm">🧅</span>
+      <span class="sidebar-brand">ONION_SURE</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-view="dashboard"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+      <a href="#" class="nav-item" data-view="farmers"><span class="nav-icon">👨‍🌾</span><span class="nav-label">Farmers</span></a>
+      <a href="#" class="nav-item" data-view="centres"><span class="nav-icon">🏢</span><span class="nav-label">Centres</span></a>
+      <a href="#" class="nav-item" data-view="lots"><span class="nav-icon">📦</span><span class="nav-label">Lots</span></a>
+      <a href="#" class="nav-item" data-view="inspections"><span class="nav-icon">🔍</span><span class="nav-label">Inspections</span></a>
+      <a href="#" class="nav-item" data-view="upload"><span class="nav-icon">📸</span><span class="nav-label">Upload Image</span></a>
+      <a href="#" class="nav-item" data-view="grading"><span class="nav-icon">⚖️</span><span class="nav-label">AI Grading</span></a>
+      <a href="#" class="nav-item" data-view="review"><span class="nav-icon">👁️</span><span class="nav-label">Manual Review</span></a>
+      <a href="#" class="nav-item" data-view="reports"><span class="nav-icon">📄</span><span class="nav-label">Reports</span></a>
+      <a href="#" class="nav-item" data-view="verify"><span class="nav-icon">✅</span><span class="nav-label">QR Verify</span></a>
+      <a href="#" class="nav-item" data-view="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar">O</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Operator</div>
+          <div class="user-role" id="user-role">OPERATOR</div>
+        </div>
+        <button class="logout-btn" id="logout-btn" title="Logout">↩</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="main-content">
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <span class="api-status" id="api-status-indicator">● Live</span>
+        <span class="topbar-version">v1.0.0</span>
+      </div>
+    </header>
+
+    <div class="view-container">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="view active" id="view-dashboard">
+        <div class="view-header">
+          <h1>Quality Assessment Overview</h1>
+          <p>Real-time lot inspection statistics and grading summaries</p>
+        </div>
+        <div class="stat-grid" id="stat-grid">
+          <div class="stat-card stat-green">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value" id="stat-grade-a">—</div>
+            <div class="stat-label">Grade A Lots</div>
+          </div>
+          <div class="stat-card stat-yellow">
+            <div class="stat-icon">📏</div>
+            <div class="stat-value" id="stat-urs">—</div>
+            <div class="stat-label">URS Lots</div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="stat-icon">❌</div>
+            <div class="stat-value" id="stat-reject">—</div>
+            <div class="stat-label">Rejected Lots</div>
+          </div>
+          <div class="stat-card stat-purple">
+            <div class="stat-icon">👁️</div>
+            <div class="stat-value" id="stat-review">—</div>
+            <div class="stat-label">Pending Review</div>
+          </div>
+          <div class="stat-card stat-blue">
+            <div class="stat-icon">🔍</div>
+            <div class="stat-value" id="stat-inspections">—</div>
+            <div class="stat-label">Inspections</div>
+          </div>
+          <div class="stat-card stat-teal">
+            <div class="stat-icon">👨‍🌾</div>
+            <div class="stat-value" id="stat-farmers">—</div>
+            <div class="stat-label">Farmers</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>Recent Inspections</span><button class="btn btn-sm" onclick="navigate('inspections')">View All</button></div>
+          <div class="table-wrap" id="dashboard-inspections-table"><div class="loading-row"><span class="spinner"></span> Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── FARMERS ── -->
+      <div class="view" id="view-farmers">
+        <div class="view-header">
+          <h1>Farmer Registry</h1>
+          <p>Manage registered farmers and their lot histories</p>
+          <button class="btn btn-primary" onclick="openModal('modal-farmer')">+ Add Farmer</button>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>All Farmers</span><input class="search-input" placeholder="Search farmers…" id="farmer-search" oninput="filterTable('farmers-table','farmer-search')" /></div>
+          <div class="table-wrap" id="farmers-table"><div class="loading-row"><span class="spinner"></span> Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── CENTRES ── -->
+      <div class="view" id="view-centres">
+        <div class="view-header">
+          <h1>Procurement Centres</h1>
+          <p>Government mandi intake and storage centres</p>
+          <button class="btn btn-primary" onclick="openModal('modal-centre')">+ Add Centre</button>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>All Centres</span></div>
+          <div class="table-wrap" id="centres-table"><div class="loading-row"><span class="spinner"></span> Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── LOTS ── -->
+      <div class="view" id="view-lots">
+        <div class="view-header">
+          <h1>Onion Lots</h1>
+          <p>Track incoming lots from farmers to procurement centres</p>
+          <button class="btn btn-primary" onclick="openModal('modal-lot')">+ Create Lot</button>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>All Lots</span><input class="search-input" placeholder="Search lots…" id="lot-search" oninput="filterTable('lots-table','lot-search')" /></div>
+          <div class="table-wrap" id="lots-table"><div class="loading-row"><span class="spinner"></span> Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── INSPECTIONS ── -->
+      <div class="view" id="view-inspections">
+        <div class="view-header">
+          <h1>Inspections</h1>
+          <p>Create and track quality inspection sessions</p>
+          <button class="btn btn-primary" onclick="openModal('modal-inspection')">+ New Inspection</button>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>All Inspections</span></div>
+          <div class="table-wrap" id="inspections-table"><div class="loading-row"><span class="spinner"></span> Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── UPLOAD IMAGE ── -->
+      <div class="view" id="view-upload">
+        <div class="view-header">
+          <h1>Upload Inspection Image</h1>
+          <p>Submit onion sample images for AI analysis and grading</p>
+        </div>
+        <div class="panel upload-panel">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Inspection ID</label>
+              <input type="text" id="upload-inspection-id" placeholder="e.g. 3f8a12b4-…" />
+            </div>
+          </div>
+          <div class="drop-zone" id="drop-zone">
+            <div class="drop-icon">📸</div>
+            <div class="drop-text">Drag & drop image here, or <span class="link-text" onclick="document.getElementById('file-input').click()">browse</span></div>
+            <div class="drop-hint">JPG, PNG up to 15 MB</div>
+            <input type="file" id="file-input" accept="image/jpeg,image/png" style="display:none" onchange="previewFile(event)" />
+          </div>
+          <img id="image-preview" class="image-preview hidden" alt="Preview" />
+          <button class="btn btn-primary" onclick="uploadImage()">Analyse Image</button>
+          <div id="upload-result" class="result-box hidden"></div>
+        </div>
+      </div>
+
+      <!-- ── AI GRADING RESULTS ── -->
+      <div class="view" id="view-grading">
+        <div class="view-header">
+          <h1>AI Grading Results</h1>
+          <p>Inspect per-onion detections, defect classifications, and lot-level grade decisions</p>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span>Inspection Grading Report</span>
+            <div class="form-inline">
+              <input type="text" id="grade-inspection-id" placeholder="Paste Inspection ID" />
+              <button class="btn btn-sm btn-primary" onclick="loadGradingResults()">Load</button>
+            </div>
+          </div>
+          <div id="grading-results"><div class="empty-state">Enter an Inspection ID above to load grading results.</div></div>
+        </div>
+      </div>
+
+      <!-- ── MANUAL REVIEW ── -->
+      <div class="view" id="view-review">
+        <div class="view-header">
+          <h1>Manual Review Queue</h1>
+          <p>Inspections flagged for human expert assessment (AI confidence below threshold)</p>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>Pending Human Review</span></div>
+          <div class="table-wrap" id="review-table"><div class="loading-row"><span class="spinner"></span> Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── REPORTS ── -->
+      <div class="view" id="view-reports">
+        <div class="view-header">
+          <h1>Digital Quality Reports</h1>
+          <p>Generate, download and verify tamper-evident inspection certificates</p>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>All Reports</span></div>
+          <div class="table-wrap" id="reports-table"><div class="loading-row"><span class="spinner"></span> Loading…</div></div>
+        </div>
+      </div>
+
+      <!-- ── QR VERIFY ── -->
+      <div class="view" id="view-verify">
+        <div class="view-header">
+          <h1>QR Code Verification</h1>
+          <p>Publicly verify any inspection certificate without logging in</p>
+        </div>
+        <div class="panel verify-panel">
+          <div class="form-group">
+            <label>Verification Hash / QR Code ID</label>
+            <input type="text" id="verify-hash" placeholder="Paste the verification hash from the QR code…" />
+          </div>
+          <button class="btn btn-primary" onclick="verifyQR()">Verify Certificate</button>
+          <div id="verify-result" class="result-box hidden"></div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div class="view" id="view-settings">
+        <div class="view-header">
+          <h1>Settings</h1>
+          <p>Configure API endpoint, user profile, and dashboard preferences</p>
+        </div>
+        <div class="settings-grid">
+          <div class="panel">
+            <div class="panel-header"><span>API Configuration</span></div>
+            <div class="form-group">
+              <label>Backend API URL</label>
+              <input type="text" id="settings-api-url" placeholder="http://localhost:8000" />
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            <div id="settings-msg" class="hidden"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span>Connection Status</span></div>
+            <div id="health-result" class="health-display">
+              <button class="btn btn-sm btn-outline" onclick="testConnection()">Test Connection</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span>Logged-in User</span></div>
+            <div id="settings-user-info" class="user-info-block">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /view-container -->
+  </main>
+</div><!-- /screen-app -->
+
+<!-- ========== MODALS ========== -->
+<div class="modal-overlay hidden" id="modal-farmer">
+  <div class="modal">
+    <div class="modal-header"><h3>Add Farmer</h3><button class="modal-close" onclick="closeModal('modal-farmer')">✕</button></div>
+    <div class="form-group"><label>Full Name</label><input type="text" id="farmer-name" placeholder="Ramesh Patil" /></div>
+    <div class="form-group"><label>Phone</label><input type="text" id="farmer-phone" placeholder="+91 98765 00000" /></div>
+    <div class="form-group"><label>Village / Location</label><input type="text" id="farmer-village" placeholder="Lasalgaon, Nashik" /></div>
+    <div class="form-group"><label>Aadhaar (last 4 digits only)</label><input type="text" id="farmer-aadhaar" maxlength="4" placeholder="XXXX" /></div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="createFarmer()">Create Farmer</button></div>
+    <div id="farmer-msg" class="hidden"></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-centre">
+  <div class="modal">
+    <div class="modal-header"><h3>Add Procurement Centre</h3><button class="modal-close" onclick="closeModal('modal-centre')">✕</button></div>
+    <div class="form-group"><label>Centre Name</label><input type="text" id="centre-name" placeholder="DoCA Lasalgaon Hub" /></div>
+    <div class="form-group"><label>Location / District</label><input type="text" id="centre-location" placeholder="Lasalgaon, Nashik, Maharashtra" /></div>
+    <div class="form-group"><label>State</label><input type="text" id="centre-state" placeholder="Maharashtra" /></div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="createCentre()">Create Centre</button></div>
+    <div id="centre-msg" class="hidden"></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-lot">
+  <div class="modal">
+    <div class="modal-header"><h3>Create Lot</h3><button class="modal-close" onclick="closeModal('modal-lot')">✕</button></div>
+    <div class="form-group"><label>Lot Number</label><input type="text" id="lot-number" placeholder="LOT-NSK-2026-001" /></div>
+    <div class="form-group"><label>Farmer ID</label><input type="text" id="lot-farmer-id" placeholder="Farmer UUID" /></div>
+    <div class="form-group"><label>Centre ID</label><input type="text" id="lot-centre-id" placeholder="Centre UUID" /></div>
+    <div class="form-group"><label>Variety</label><input type="text" id="lot-variety" placeholder="Nashik Red" /></div>
+    <div class="form-group"><label>Quantity (kg)</label><input type="number" id="lot-quantity" placeholder="500" /></div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="createLot()">Create Lot</button></div>
+    <div id="lot-msg" class="hidden"></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-inspection">
+  <div class="modal">
+    <div class="modal-header"><h3>New Inspection</h3><button class="modal-close" onclick="closeModal('modal-inspection')">✕</button></div>
+    <div class="form-group"><label>Lot ID</label><input type="text" id="insp-lot-id" placeholder="Lot UUID" /></div>
+    <div class="form-group"><label>Sample Size</label><input type="number" id="insp-sample-size" value="10" /></div>
+    <div class="form-group"><label>Notes</label><textarea id="insp-notes" placeholder="Optional inspection notes…"></textarea></div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="createInspection()">Start Inspection</button></div>
+    <div id="inspection-msg" class="hidden"></div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

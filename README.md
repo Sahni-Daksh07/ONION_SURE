@@ -170,7 +170,32 @@ python scripts/audit_production_readiness.py
 pytest -v
 ```
 
-### 6. Run the Flutter Mobile Application
+### 6. Access the Web Application Dashboard
+
+The platform includes a dedicated, dark-mode web dashboard running directly with the FastAPI backend — **no mobile device or Flutter SDK required!**
+
+```bash
+# Start backend server (if not already running)
+python -m uvicorn onion_sure.backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Open your browser and navigate to:
+👉 **[http://127.0.0.1:8000/dashboard/](http://127.0.0.1:8000/dashboard/)**
+
+**Included Screens & Features:**
+- 📊 **Executive Overview**: Real-time stats, Grade A vs URS breakdown, defect trends
+- 👨‍🌾 **Farmer Directory**: Search, filter, and register farmers with land records
+- 🏢 **Procurement Centres**: View and register Mandi / NAFED / NCCF intake hubs
+- 📦 **Lot Management**: Create new onion lots with variety, harvest date, and quantity
+- 🔍 **Inspections List**: Track inspections, statuses, and reviewer notes
+- 📸 **Image Upload & Inference**: Drag-and-drop onion lot photos for live AI grading
+- ⚖️ **AI Grading Engine**: Detailed detection metrics, defect badges, and DoCA Grade A / URS decision trace
+- 👁️ **Manual Review Overrides**: Human-in-the-loop verification with audit reason codes
+- 📄 **Digital Quality Reports**: Generate tamper-proof reports with unique report IDs
+- ✅ **QR Code Verification**: Zero-PII public certificate verification tool
+- ⚙️ **Settings & API Configuration**: Live API connection monitoring and endpoints
+
+### 7. Run the Flutter Mobile Application (Optional)
 
 ```bash
 cd mobile

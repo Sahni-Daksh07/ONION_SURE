@@ -10,6 +10,7 @@ Features:
 - Standardized error handling
 """
 
+import os
 import time
 import logging
 from contextlib import asynccontextmanager
@@ -17,6 +18,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .database import check_database_connection
@@ -127,6 +129,11 @@ app.include_router(reports.router, prefix=settings.API_V1_PREFIX)
 app.include_router(audit_logs.router, prefix=settings.API_V1_PREFIX)
 app.include_router(sync.router, prefix=settings.API_V1_PREFIX)
 
+# Mount Web Dashboard
+_web_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "web"))
+if os.path.isdir(_web_dir):
+    app.mount("/dashboard", StaticFiles(directory=_web_dir, html=True), name="dashboard")
+
 
 @app.get("/")
 def root_info():
@@ -136,6 +143,7 @@ def root_info():
         "problem_statement": "PS26031",
         "version": settings.APP_VERSION,
         "docs_url": "/docs",
+        "dashboard_url": "/dashboard/",
         "health_check": "/health",
         "api_v1_prefix": settings.API_V1_PREFIX,
     }
