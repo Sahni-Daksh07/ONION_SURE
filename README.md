@@ -4,6 +4,7 @@
 [![Tests Passing](https://img.shields.io/badge/Tests-62%2F62%20Passed-brightgreen.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20PostgreSQL-teal.svg)](#)
 [![Flutter](https://img.shields.io/badge/Mobile-Flutter%203.x-02569B.svg)](#)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Sahni-Daksh07/ONION_SURE)
 
 > **Autonomous AI-Powered Onion Quality Assessment, Deterministic Grading, and Tamper-Evident Digital Reporting System**. 
 
