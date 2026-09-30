@@ -1,0 +1,82 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: onion_sure_prod_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-onion_sure}
+      POSTGRES_USER: ${POSTGRES_USER:-onion_sure_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password must be set}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-onion_sure_app} -d ${POSTGRES_DB:-onion_sure}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - onionsure_net
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onion_sure_prod_backend
+    restart: always
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "False"
+      HOST: "0.0.0.0"
+      PORT: "8000"
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-onion_sure_app}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-onion_sure}
+      SECRET_KEY: ${SECRET_KEY:?Production SECRET_KEY must be configured}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-120}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-14}
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_LOCAL_DIR: /app/uploads
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-onion-sure-inspections}
+      QR_BASE_URL: ${QR_BASE_URL:-https://onionsure.gov.in/verify}
+      DEVICE: cpu
+    volumes:
+      - uploads_data:/app/uploads
+      - weights_data:/app/ml/weights
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - onionsure_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: onion_sure_prod_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - backend
+    networks:
+      - onionsure_net
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+  weights_data:
+    driver: local
+  certbot_conf:
+    driver: local
+  certbot_www:
+    driver: local
+
+networks:
+  onionsure_net:
+    driver: bridge

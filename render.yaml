@@ -1,0 +1,49 @@
+# ==============================================================================
+# ONION_SURE — Render Infrastructure-as-Code Blueprint
+# Smart India Hackathon 2026 - Problem Statement PS26031
+# ==============================================================================
+
+services:
+  # FastAPI Application Backend + Embedded Web Dashboard
+  - type: web
+    name: onion-sure-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free # Can be upgraded to starter or standard for production
+    region: oregon # Available: oregon, frankfurt, singapore, ohio
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: APP_NAME
+        value: ONION_SURE
+      - key: APP_VERSION
+        value: 1.0.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8000
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: onion-sure-postgres
+          property: connectionString
+      - key: STORAGE_TYPE
+        value: local
+      - key: STORAGE_LOCAL_DIR
+        value: uploads
+      - key: DEVICE
+        value: cpu
+      - key: QR_BASE_URL
+        value: https://onion-sure-api.onrender.com/api/v1/reports/verify
+    healthCheckPath: /health
+
+databases:
+  # Managed PostgreSQL Database
+  - name: onion-sure-postgres
+    databaseName: onion_sure
+    user: onion_sure_app
+    plan: free # Render free PostgreSQL instance (or starter)
+    region: oregon

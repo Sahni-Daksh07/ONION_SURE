@@ -47,6 +47,8 @@ $RECYCLE.BIN/
 .env
 .env.*
 !.env.example
+!.env.production.example
+!deploy/.env.*
 *.pem
 *.key
 credentials.json
