@@ -53,6 +53,15 @@ async def lifespan(app: FastAPI):
                 from .models.entities import Base as EntityBase
                 EntityBase.metadata.create_all(bind=engine)
                 logger.info("Local SQLite tables created/verified successfully.")
+                from .database import SessionLocal
+                from .seed import seed_database
+                _sdb = SessionLocal()
+                try:
+                    seed_database(_sdb)
+                except Exception as _se:
+                    logger.warning(f"Database seed check: {_se}")
+                finally:
+                    _sdb.close()
             logger.info("Database connection verified successfully.")
         else:
             logger.warning(

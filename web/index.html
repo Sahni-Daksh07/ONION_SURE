@@ -34,9 +34,17 @@
     </div>
     <h2 class="login-heading">Sign in to your account</h2>
     <div id="login-error" class="alert alert-error hidden"></div>
+    <div class="demo-box" style="margin-bottom: 20px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px dashed var(--border); border-radius: var(--radius-sm);">
+      <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase;">⚡ Quick Demo Login:</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-sm btn-outline" onclick="fillDemo('admin@onionsure.gov.in', 'Admin@12345')">🛡️ Admin</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="fillDemo('inspector@onionsure.gov.in', 'Inspector@12345')">🔍 Inspector</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="fillDemo('operator@onionsure.gov.in', 'Operator@12345')">📦 Operator</button>
+      </div>
+    </div>
     <div class="form-group">
       <label>Username or Email</label>
-      <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" />
+      <input type="text" id="login-username" placeholder="e.g. inspector or inspector@onionsure.gov.in" autocomplete="username" />
     </div>
     <div class="form-group">
       <label>Password</label>
@@ -46,7 +54,7 @@
       <span id="login-btn-text">Sign In</span>
       <span id="login-btn-spinner" class="spinner hidden"></span>
     </button>
-    <p class="login-hint">Development mode: any credentials will authenticate against the local API.</p>
+    <p class="login-hint">Development mode: Click any quick demo button or enter any credentials.</p>
   </div>
 </div>
 

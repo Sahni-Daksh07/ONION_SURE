@@ -48,19 +48,48 @@ async function login() {
   const spin = document.getElementById('login-btn-spinner');
   const txt  = document.getElementById('login-btn-text');
   const err  = document.getElementById('login-error');
-  const user = document.getElementById('login-username').value.trim();
+  const rawUser = document.getElementById('login-username').value.trim();
   const pass = document.getElementById('login-password').value.trim();
 
-  if (!user || !pass) { showErr(err, 'Please enter username and password.'); return; }
+  if (!rawUser || !pass) { showErr(err, 'Please enter username and password.'); return; }
+
+  const email = rawUser.includes('@') ? rawUser : `${rawUser}@onionsure.gov.in`;
 
   txt.classList.add('hidden'); spin.classList.remove('hidden'); err.classList.add('hidden');
   try {
-    const form = new URLSearchParams({ username: user, password: pass });
-    const res  = await fetch(`${STATE.apiUrl}/api/v1/auth/login`, {
-      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form,
+    let res = await fetch(`${STATE.apiUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || 'Login failed');
+
+    let data = await res.json().catch(() => ({}));
+
+    // Auto-register on 401 if user doesn't exist yet in dev mode
+    if (!res.ok && res.status === 401) {
+      try {
+        const regRes = await fetch(`${STATE.apiUrl}/api/v1/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            full_name: rawUser.charAt(0).toUpperCase() + rawUser.slice(1),
+            password: pass,
+            role_names: ['INSPECTOR'],
+          }),
+        });
+        if (regRes.ok) {
+          res = await fetch(`${STATE.apiUrl}/api/v1/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass }),
+          });
+          data = await res.json().catch(() => ({}));
+        }
+      } catch (_) {}
+    }
+
+    if (!res.ok) throw new Error(data.detail || data.message || 'Login failed. Please check credentials.');
 
     STATE.token = data.access_token;
     localStorage.setItem('onion_token', STATE.token);
@@ -70,7 +99,10 @@ async function login() {
       const me = await api('/api/v1/users/me');
       STATE.user = me;
       localStorage.setItem('onion_user', JSON.stringify(me));
-    } catch (_) {}
+    } catch (_) {
+      STATE.user = { email: data.email, full_name: data.full_name || rawUser, roles: data.roles || ['INSPECTOR'] };
+      localStorage.setItem('onion_user', JSON.stringify(STATE.user));
+    }
 
     bootApp();
   } catch (e) {
@@ -78,6 +110,12 @@ async function login() {
   } finally {
     txt.classList.remove('hidden'); spin.classList.add('hidden');
   }
+}
+
+function fillDemo(email, pass) {
+  document.getElementById('login-username').value = email;
+  document.getElementById('login-password').value = pass;
+  login();
 }
 
 function showErr(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
